@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auth Practice</title>
+    <style>
+      .col-flex {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="col-flex">
+      <form class="col-flex">
+        <label>
+          Email:
+          <input type="text" id="email" value="rahul@example.com" />
+        </label>
+
+        <label>
+          Password:
+          <input type="text" id="password" value="12345" />
+        </label>
+
+        <button>Login</button>
+
+        <div id="auth-result"></div>
+
+        <script>
+          document.querySelector('form').addEventListener('submit', handleLogin);
+
+          function handleLogin(event) {
+            event.preventDefault();
+
+            fetch('http://127.0.0.1:5000/auth/login', {
+              method: 'post',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                email: document.querySelector('#email').value,
+                password: document.querySelector('#password').value,
+              }),
+            })
+              .then(res => res.text())
+              .then(data => {
+                document.querySelector('#auth-result').textContent = data;
+              });
+          }
+        </script>
+      </form>
+
+      <button onclick="launchMissile()">Launch Missile 🚀</button>
+
+      <div id="test-result"></div>
+    </main>
+
+    <script>
+      function launchMissile() {
+        fetch('http://127.0.0.1:5000/launch-missile?email=admin@example.com&password=12345')
+          .then(res => res.text())
+          .then(data => {
+            document.querySelector('#test-result').textContent = data;
+          });
+      }
+    </script>
+  </body>
+</html>
