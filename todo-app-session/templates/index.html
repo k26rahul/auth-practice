@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Todo App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+      main,
+      form,
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      main {
+        max-width: 400px;
+        margin: 1rem auto;
+        font-family: sans-serif;
+      }
+
+      label {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      ul {
+        padding: 0;
+      }
+
+      li {
+        list-style: none;
+        padding: 0.25rem 0;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      li span {
+        cursor: pointer;
+      }
+
+      .done {
+        text-decoration: line-through;
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <!-- Login accordion -->
+      <details>
+        <summary>Login</summary>
+        <form id="login-form">
+          <label>
+            Email:
+            <input type="text" id="email" value="rahul@example.com" />
+          </label>
+          <label>
+            Password:
+            <input type="text" id="password" value="12345" />
+          </label>
+          <button>Login</button>
+        </form>
+      </details>
+
+      <div id="auth-result"></div>
+
+      <button onclick="fetchTodos()">Fetch Todos</button>
+
+      <ul id="todo-list"></ul>
+    </main>
+
+    <script>
+      let session_id = localStorage.getItem('session_id');
+      let token = localStorage.getItem('token');
+
+      if (session_id && token) {
+        document.querySelector('#auth-result').textContent = 'Already logged in';
+      } else {
+        document.querySelector('#auth-result').textContent = 'Not logged in';
+      }
+
+      const html = String.raw;
+
+      async function api(endpoint, params = {}) {
+        const query = new URLSearchParams({
+          ...params,
+          session_id,
+          token,
+        }).toString();
+
+        const res = await fetch(`http://127.0.0.1:5000${endpoint}?${query}`);
+        const data = await res.json();
+
+        if (data.success) {
+          console.log(data);
+        } else {
+          console.error(data);
+        }
+
+        return data;
+      }
+
+      document.querySelector('#login-form').addEventListener('submit', handleLogin);
+
+      async function handleLogin(e) {
+        e.preventDefault();
+
+        const res = await fetch('http://127.0.0.1:5000/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email.value,
+            password: password.value,
+          }),
+        });
+
+        const data = await res.json();
+        document.querySelector('#auth-result').textContent = data.message;
+
+        if (data.success) {
+          console.log(data);
+          session_id = data.payload.session_id;
+          token = data.payload.token;
+          localStorage.setItem('session_id', session_id);
+          localStorage.setItem('token', token);
+        } else {
+          console.error(data);
+        }
+      }
+
+      async function fetchTodos() {
+        const data = await api('/todo/list');
+        renderTodos(data.payload || []);
+      }
+
+      async function markDone(id) {
+        await api('/todo/update', {
+          todo_id: id,
+          action: 'mark_done',
+        });
+        fetchTodos();
+      }
+
+      async function markStarred(id) {
+        await api('/todo/update', {
+          todo_id: id,
+          action: 'mark_starred',
+        });
+        fetchTodos();
+      }
+
+      function renderTodos(todos) {
+        const list = document.querySelector('#todo-list');
+        list.innerHTML = '';
+
+        todos.forEach(todo => {
+          list.insertAdjacentHTML(
+            'beforeend',
+            html`
+              <li>
+                <span class="${todo.is_done ? 'done' : ''}" onclick="markDone(${todo.id})">
+                  ${todo.text}
+                </span>
+
+                <span class="star" onclick="markStarred(${todo.id})">
+                  ${todo.is_starred ? '★' : '☆'}
+                </span>
+              </li>
+            `
+          );
+        });
+      }
+    </script>
+  </body>
+</html>
