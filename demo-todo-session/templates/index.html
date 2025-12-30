@@ -51,8 +51,6 @@
     </main>
 
     <script>
-      const html = String.raw;
-
       let sessionId = localStorage.getItem('sessionId');
       let token = localStorage.getItem('token');
 
@@ -92,13 +90,16 @@
       }
 
       async function fetchTodos() {
-        const res = await fetch('http://127.0.0.1:5000/todo/list?session_id=1&token=a5nRTFj11j');
+        const res = await fetch(
+          `http://127.0.0.1:5000/todo/list?session_id=${sessionId}&token=${token}`
+        );
         const data = await res.json();
 
         if (data.success) {
           console.log(data);
           for (let todo of data.payload.todos) {
-            const todoHtml = html`<li>${todo.text}</li>`;
+            const todoHtml = `<li>${todo.text}</li>`;
+
             // document.querySelector('#todos').innerHTML += todoHtml;
             document.querySelector('#todos').insertAdjacentHTML('beforeend', todoHtml);
           }
