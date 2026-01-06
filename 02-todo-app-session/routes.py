@@ -27,9 +27,9 @@ def login():
         "success": True,
         "message": f"Logged in as {user.name}",
         "payload": {
-            "session_id": session.id,
+            "sessionId": session.id,
             "token": session.token,
-            "user_id": user.id
+            "userId": user.id
         }
     })
 
@@ -48,7 +48,7 @@ def create_todo():
   for learning and comparison purposes.
   """
   ok, user = validate_session(
-      request.args.get("session_id"),
+      request.args.get("sessionId"),
       request.args.get("token")
   )
 
@@ -72,8 +72,8 @@ def list_todos(user):
       {
           "id": todo.id,
           "text": todo.text,
-          "is_done": todo.is_done,
-          "is_starred": todo.is_starred
+          "isDone": todo.is_done,
+          "isStarred": todo.is_starred
       }
       for todo in todos
   ]
@@ -88,16 +88,16 @@ def list_todos(user):
 @routes.route("/todo/update")
 @require_session
 def update_todo(user):
-  todo_id = request.args.get("todo_id")
+  todo_id = request.args.get("todoId")
   action = request.args.get("action")
 
   todo = Todo.query.filter_by(id=todo_id, user_id=user.id).first()
   if not todo:
     return jsonify({"success": False, "message": "Todo not found"})
 
-  if action == "mark_done":
+  if action == "markDone":
     todo.is_done = not todo.is_done
-  elif action == "mark_starred":
+  elif action == "markStarred":
     todo.is_starred = not todo.is_starred
 
   db.session.commit()
@@ -107,7 +107,7 @@ def update_todo(user):
 @routes.route("/todo/delete")
 @require_session
 def delete_todo(user):
-  todo_id = request.args.get("todo_id")
+  todo_id = request.args.get("todoId")
 
   todo = Todo.query.filter_by(id=todo_id, user_id=user.id).first()
   if not todo:

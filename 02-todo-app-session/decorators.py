@@ -4,34 +4,34 @@ from helpers import validate_session
 
 
 def require_session(fn):
+  """
+  require_session is a decorator.
+
+  It takes the original route function as input
+  and returns a wrapped version of that function
+  with session validation logic added.
+  """
+  @wraps(fn)
+  def wrapper(*args, **kwargs):
     """
-    require_session is a decorator.
+    wrapper replaces the original route function.
 
-    It takes the original route function as input
-    and returns a wrapped version of that function
-    with session validation logic added.
+    It is called instead of the original function.
+    It performs authentication first and, if valid,
+    then calls the original function with the
+    authenticated user injected as an argument.
     """
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        """
-        wrapper replaces the original route function.
+    ok, user = validate_session(
+        request.args.get("sessionId"),
+        request.args.get("token")
+    )
 
-        It is called instead of the original function.
-        It performs authentication first and, if valid,
-        then calls the original function with the
-        authenticated user injected as an argument.
-        """
-        ok, user = validate_session(
-            request.args.get("session_id"),
-            request.args.get("token")
-        )
+    if not ok:
+      return jsonify({
+          "success": False,
+          "message": "Unauthorized"
+      })
 
-        if not ok:
-            return jsonify({
-                "success": False,
-                "message": "Unauthorized"
-            })
+    return fn(user, *args, **kwargs)
 
-        return fn(user, *args, **kwargs)
-
-    return wrapper
+  return wrapper
