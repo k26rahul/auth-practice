@@ -8,6 +8,7 @@ if (sessionId && token) {
 }
 
 document.querySelector('#login-form').addEventListener('submit', handleLogin);
+document.querySelector('#todo-form').addEventListener('submit', handleTodoCreate);
 
 function renderTodos(todos) {
   const list = document.querySelector('#todo-list');
@@ -72,8 +73,8 @@ async function handleLogin(e) {
   e.preventDefault();
 
   const data = await api('post', '/auth/login', {
-    email: email.value,
-    password: password.value,
+    email: document.querySelector('#email').value,
+    password: document.querySelector('#password').value,
   });
 
   if (data.success) {
@@ -84,6 +85,16 @@ async function handleLogin(e) {
   }
 
   document.querySelector('#auth-result').textContent = data.message;
+}
+
+async function handleTodoCreate(e) {
+  e.preventDefault();
+
+  await api('get', '/todo/create', {
+    text: document.querySelector('#todo-text').value,
+  });
+
+  fetchTodos();
 }
 
 async function fetchTodos() {

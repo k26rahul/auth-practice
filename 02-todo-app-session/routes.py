@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, render_template
 from models import db, User, Session, Todo
 from helpers import generate_token, validate_session
 from decorators import require_session
+from werkzeug.security import check_password_hash
 
 routes = Blueprint("routes", __name__)
 
@@ -18,7 +19,7 @@ def login():
 
   user = User.query.filter_by(email=email).first()
 
-  if user and user.password == password:
+  if user and check_password_hash(user.password, password):
     session = Session(token=generate_token(), user_id=user.id)
     db.session.add(session)
     db.session.commit()

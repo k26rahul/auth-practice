@@ -1,4 +1,5 @@
 from models import db, User, Todo
+from werkzeug.security import generate_password_hash
 
 
 def populate_db():
@@ -8,13 +9,13 @@ def populate_db():
   user1 = User(
       name="rahul",
       email="rahul@example.com",
-      password="12345"
+      password=generate_password_hash("12345")
   )
 
   user2 = User(
       name="vidu",
       email="vidu@example.com",
-      password="12345"
+      password=generate_password_hash("12345")
   )
 
   db.session.add_all([user1, user2])

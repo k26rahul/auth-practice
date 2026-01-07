@@ -10,29 +10,40 @@
 
   <body>
     <main>
-      <!-- login accordion -->
-      <details>
-        <summary>Login</summary>
+      <section>
+        <!-- login accordion -->
+        <details>
+          <summary>Login</summary>
 
-        <form id="login-form">
+          <form id="login-form">
+            <label>
+              Email:
+              <input type="text" id="email" value="rahul@example.com" />
+            </label>
+            <label>
+              Password:
+              <input type="text" id="password" value="12345" />
+            </label>
+            <button>Login</button>
+          </form>
+        </details>
+
+        <div id="auth-result">Not logged in</div>
+      </section>
+
+      <section>
+        <form id="todo-form">
           <label>
-            Email:
-            <input type="text" id="email" value="rahul@example.com" />
+            <input type="text" id="todo-text" value="say hello">
           </label>
-          <label>
-            Password:
-            <input type="text" id="password" value="12345" />
-          </label>
-          <button>Login</button>
+          <button>Create</button>
         </form>
-      </details>
 
-      <div id="auth-result">Not logged in</div>
+        <button onclick="fetchTodos()">Fetch Todos</button>
 
-      <button onclick="fetchTodos()">Fetch Todos</button>
-
-      <ul id="todo-list">
-      </ul>
+        <ul id="todo-list">
+        </ul>
+      </section>
     </main>
   </body>
 </html>
