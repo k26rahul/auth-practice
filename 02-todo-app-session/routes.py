@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, render_template
 from models import db, User, Session, Todo
 from werkzeug.security import check_password_hash
-from utils import generate_token
+from utils import validate_session, generate_token
 
 routes = Blueprint("routes", __name__)
 
@@ -42,11 +42,8 @@ def login():
 
 @routes.route("/todo/list")
 def list_todos():
-  session_id = request.args.get("sessionId")
-  token = request.args.get("token")
-
-  session = Session.query.filter_by(id=session_id).first()
-  if session and session.token == token:
+  session = validate_session()
+  if session:
     todos = Todo.query.filter_by(user_id=session.user_id).all()
     return jsonify({
         "success": True,
@@ -66,11 +63,8 @@ def list_todos():
 
 @routes.route("/todo/create")
 def create_todo():
-  session_id = request.args.get("sessionId")
-  token = request.args.get("token")
-
-  session = Session.query.filter_by(id=session_id).first()
-  if session and session.token == token:
+  session = validate_session()
+  if session:
     text = request.args.get("text")
 
     db.session.add(Todo(
@@ -86,11 +80,7 @@ def create_todo():
 
 @routes.route("/todo/update")
 def update_todo():
-  session_id = request.args.get("sessionId")
-  token = request.args.get("token")
-
-  session = Session.query.filter_by(id=session_id).first()
-  if session and session.token == token:
+  if validate_session():
     todo_id = request.args.get("todoId")
     action = request.args.get("action")
 
@@ -110,11 +100,7 @@ def update_todo():
 
 @routes.route("/todo/delete")
 def delete_todo():
-  session_id = request.args.get("sessionId")
-  token = request.args.get("token")
-
-  session = Session.query.filter_by(id=session_id).first()
-  if session and session.token == token:
+  if validate_session():
     todo_id = request.args.get("todoId")
 
     todo = Todo.query.filter_by(id=todo_id).first()
