@@ -1,7 +1,7 @@
-import string
 import secrets
+from string import ascii_letters, digits
 
 
 def generate_token(length=10):
-  chars = string.ascii_letters + string.digits
+  chars = ascii_letters + digits
   return ''.join(secrets.choice(chars) for _ in range(length))
