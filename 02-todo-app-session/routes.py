@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, render_template
 from models import db, User, Session, Todo
 from werkzeug.security import check_password_hash
-from utils import validate_session, generate_token
+from utils import generate_token
 from decorators import login_required
 
 routes = Blueprint("routes", __name__)
@@ -10,6 +10,16 @@ routes = Blueprint("routes", __name__)
 @routes.route("/")
 def index():
   return render_template("index.html")
+
+
+@routes.route("/auth/whoami")
+@login_required
+def whoami(session):
+  user = User.query.filter_by(id=session.user_id).first()
+  return jsonify({
+      "success": True,
+      "message": f"Logged in as {user.name}",
+  })
 
 
 @routes.route("/auth/login", methods=["POST"])
@@ -26,19 +36,19 @@ def login():
     db.session.add(session)
     db.session.commit()
 
-    return jsonify({
+    response = jsonify({
         "success": True,
         "message": f"Logged in as {user.name}",
-        "payload": {
-            "sessionId": session.id,
-            "token": session.token,
-        }
     })
+    response.set_cookie("sessionId", str(session.id), httponly=True)
+    response.set_cookie("token", session.token, httponly=True)
+
+    return response
   else:
     return jsonify({
         "success": False,
         "message": f"Incorrect email or password",
-    })
+    }), 401
 
 
 @routes.route("/todo/list")
@@ -59,10 +69,12 @@ def list_todos(session):
   })
 
 
-@routes.route("/todo/create")
+@routes.route("/todo/create", methods=["POST"])
 @login_required
 def create_todo(session):
-  text = request.args.get("text")
+  # text = request.args.get("text")  # ?text=say+hello
+  # text = request.form.get("text")  # <form action="/todo/create" method="post">
+  text = request.json.get("text")  # Content-Type: "application/json"
 
   db.session.add(Todo(
       text=text,
