@@ -86,3 +86,18 @@ Vue app creation and main code is contained in the main.js file. We can create a
 ---
 
 I have started to develop this app. And I have written some code in my files. I will attach my files. Maybe this will help you to imagine what I want. You can delete whatever I have written and start from scratch.
+
+---
+
+Everything is looking good but these are the changes that I want.
+
+When you display the {{ encBrowserResult }} variable, Make sure you use word break in CSS so that it does not overflow out of container.
+
+In decoding section we have this: Step 5: Map to Decimals
+And after this section you directly display "Final Decoded Output". But I also want a section 6. Display this section if the data was entered as text input. In this section you display the corresponding ASCII character for every decimal. If the decimal is more than 127, Then you keep that cell "[X]". For space you write "[SPACE]". You also mention decimals > 127 are represented as "[X]".
+
+And inside the section "1. Input Data Visualization". If the data is entered as text input, then first display the unicode code points of the text. Like I want to see a bunch of "U+XXXXX".
+
+Also for the step one of the encoding section "Step 1: 6-bit Chunks (Split entire binary sequence into groups of 6 bits)", You have to talk about the padding first. Display the following information: Number of bits in data. Remainder when dividing that number by 6. Then tell whether it needs padding (and how many bits) or not based on if remainder is zero or not. And then before you display "Final Encoded String", You tell the number of "=" symbols that you are adding.
+
+Implement these changes. And give the updated code of all the modified files. Keep everything as it is. All other functionalities and comments in code should be intact.

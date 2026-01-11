@@ -53,6 +53,15 @@
         <h2>1. Input Data Visualization</h2>
 
         <data-pills
+          v-if="inputMode === 'text'"
+          title="Unicode Code Points"
+          summary="U+XXXX Format"
+          :data="inputUnicode"
+          :collapsed="areAccordionsCollapsed"
+        >
+        </data-pills>
+
+        <data-pills
           title="Decimals (0-255)"
           summary="Uint8Array Representation"
           :data="encDecimals"
@@ -77,6 +86,28 @@
         </data-pills>
 
         <h2>2. Base64 Encoding Process</h2>
+
+        <div class="info-block">
+          <strong>Padding Calculations:</strong>
+
+          <div style="margin-top: 8px; margin-bottom: 4px; font-weight: 600; color: #444">
+            Part 1: Input Binary Sequence
+          </div>
+          • Total Bits in Data: {{ totalBitLength }}<br />
+          • Remainder (Bits % 6): {{ bitRemainder }}<br />
+          • Zero-Padding Needed: {{ zeroPaddingNeeded > 0 ? '⚠️' : '💚' }} {{ zeroPaddingNeeded }}
+          bit(s) added to binary
+
+          <hr style="margin: 8px 0; border: 0; border-top: 1px solid #ccc" />
+
+          <div style="margin-bottom: 4px; font-weight: 600; color: #444">
+            Part 2: Encoding Output (Padding Characters)
+          </div>
+          • Total Bytes: {{ totalByteLength }}<br />
+          • Remainder (Bytes % 3): {{ byteRemainder }}<br />
+          • Padding Chars ('=') Needed: {{ equalsPaddingCount > 0 ? '⚠️' : '💚' }} {{
+          equalsPaddingCount }}
+        </div>
 
         <data-pills
           title="Step 1: 6-bit Chunks"
@@ -109,7 +140,9 @@
         </div>
 
         <div :class="['verification', encMatched ? 'match' : 'mismatch']">
-          <div><strong>Verification (btoa):</strong> {{ encBrowserResult }}</div>
+          <div class="word-break-all">
+            <strong>Verification (btoa):</strong> {{ encBrowserResult }}
+          </div>
           <div v-if="encMatched">✅ Results Match</div>
           <div v-else>❌ Mismatch</div>
         </div>
@@ -148,9 +181,24 @@
         >
         </data-pills>
 
+        <div v-if="inputMode === 'text'">
+          <div style="font-size: 0.85rem; color: #666; margin-bottom: 5px; font-style: italic">
+            * Note: Decimals > 127 are represented as [X]
+          </div>
+          <data-pills
+            title="Step 6: ASCII Representation"
+            summary="Visualizing the decoded bytes"
+            :data="decAscii"
+            :collapsed="areAccordionsCollapsed"
+          >
+          </data-pills>
+        </div>
+
         <div class="final-output">
           <h3>Final Decoded Output:</h3>
-          <p v-if="inputMode === 'text'"><strong>String:</strong> {{ decResultText }}</p>
+          <p v-if="inputMode === 'text'" class="word-break-all">
+            <strong>String:</strong> {{ decResultText }}
+          </p>
           <div v-else>
             <a
               v-if="decResultBlobUrl"

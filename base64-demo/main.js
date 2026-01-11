@@ -43,14 +43,26 @@ const app = Vue.createApp({
       rawBytes: null, // Uint8Array
 
       // --- Encoding Visualization Data ---
+      inputUnicode: [], // New: U+XXXX
       encDecimals: [],
       encHex: [],
       encBinary8: [],
+
+      // Step 1 Details (Bit level)
+      totalBitLength: 0,
+      bitRemainder: 0,
+      zeroPaddingNeeded: 0,
+
+      // Padding Details (Byte level)
+      totalByteLength: 0,
+      byteRemainder: 0,
+      equalsPaddingCount: 0,
 
       encBinaryFull: '',
       encBinaryChunks6: [],
       encInts6: [],
       encSymbols: [],
+
       encFinalString: '',
       encBrowserResult: '',
       encMatched: false,
@@ -63,6 +75,7 @@ const app = Vue.createApp({
       decBinaryFull: '',
       decBinaryChunks8: [],
       decInts8: [],
+      decAscii: [], // New: ASCII visualization
       decFinalBytes: null,
       decResultText: '',
       decResultBlobUrl: null,
@@ -80,9 +93,6 @@ const app = Vue.createApp({
 
   methods: {
     toggleCollapse() {
-      // Toggle logic involves changing the open attribute manually or forcing re-render.
-      // Simplest way for this demo is changing a key on the components or specific data prop.
-      // Here we leverage the prop.
       this.areAccordionsCollapsed = !this.areAccordionsCollapsed;
     },
 
@@ -106,13 +116,20 @@ const app = Vue.createApp({
     resetAndProcess() {
       this.rawBytes = null;
       this.encFinalString = '';
+      this.inputUnicode = [];
       if (this.inputMode === 'text') this.handleTextInput();
-      // If file, wait for upload
     },
 
     // --- ENCODING FLOW ---
     processEncoding() {
       if (!this.rawBytes) return;
+
+      // 0. Unicode Code Points (Text mode only)
+      if (this.inputMode === 'text') {
+        this.inputUnicode = Base64Logic.getStringCodePoints(this.textInput);
+      } else {
+        this.inputUnicode = [];
+      }
 
       // 1. Data as Decimals
       this.encDecimals = Array.from(this.rawBytes);
@@ -123,8 +140,20 @@ const app = Vue.createApp({
       // 3. Data as Binary (8 bits)
       this.encBinary8 = this.encDecimals.map(b => b.toString(2).padStart(8, '0'));
 
-      // 4. Base64 Step 1: Full Binary String & Padding
+      // 4. Base64 Step 1: Full Binary String & Padding Calculations
       let fullBinary = Base64Logic.bytesToBinaryString(this.rawBytes);
+
+      // Calculate Bit Stats for display
+      this.totalBitLength = fullBinary.length;
+      this.bitRemainder = this.totalBitLength % 6;
+      this.zeroPaddingNeeded = this.bitRemainder === 0 ? 0 : 6 - this.bitRemainder;
+
+      // Calculate Byte Stats for display (For '=' padding)
+      this.totalByteLength = this.rawBytes.length;
+      this.byteRemainder = this.totalByteLength % 3;
+      this.equalsPaddingCount = Base64Logic.calculatePaddingChars(this.rawBytes.length);
+
+      // Apply Padding
       this.encBinaryFull = Base64Logic.padBinaryString(fullBinary);
 
       // 5. Split into 6-bit chunks
@@ -137,14 +166,11 @@ const app = Vue.createApp({
       this.encSymbols = this.encInts6.map(num => this.intToSymbol[num]);
 
       // 8. Final String (Add padding chars =)
-      const paddingCount = Base64Logic.calculatePaddingChars(this.rawBytes.length);
-      const paddingStr = '='.repeat(paddingCount);
+      const paddingStr = '='.repeat(this.equalsPaddingCount);
       this.encFinalString = this.encSymbols.join('') + paddingStr;
 
       // 9. Verification
       try {
-        // btoa only works on binary strings (Latin1), TextEncoder produces UTF8.
-        // For correct browser comparison with arbitrary bytes/utf8:
         const binaryString = Array.from(this.rawBytes, byte => String.fromCharCode(byte)).join('');
         this.encBrowserResult = btoa(binaryString);
         this.encMatched = this.encFinalString === this.encBrowserResult;
@@ -176,13 +202,8 @@ const app = Vue.createApp({
       // 3. Ints to Binary (6 bits)
       this.decBinaryChunks6 = this.decInts6.map(num => num.toString(2).padStart(6, '0'));
 
-      // 4. Full Binary Sequence (remove extra padding bits at the very end if any)
-      // Note: We reconstruct full binary, then we will chop off bits that don't make full bytes later
+      // 4. Full Binary Sequence
       const joinedBinary = this.decBinaryChunks6.join('');
-
-      // We only care about full 8-bit bytes.
-      // Calculate valid bits: (number of non-pad chars * 6) - (potentially extra bits usually ignored)
-      // Actually, standard approach: Split by 8, discard remainder.
       const validBitLength = Math.floor(joinedBinary.length / 8) * 8;
       this.decBinaryFull = joinedBinary.substring(0, validBitLength);
 
@@ -192,10 +213,19 @@ const app = Vue.createApp({
       // 6. Map to Integers
       this.decInts8 = this.decBinaryChunks8.map(bin => parseInt(bin, 2));
 
-      // 7. Create Uint8Array
+      // 7. Map to ASCII (Visualization Step 6)
+      if (this.inputMode === 'text') {
+        this.decAscii = this.decInts8.map(code => {
+          if (code > 127) return '[X]';
+          if (code === 32) return '[SPACE]';
+          return String.fromCharCode(code);
+        });
+      }
+
+      // 8. Create Uint8Array
       this.decFinalBytes = Base64Logic.intsToUint8Array(this.decInts8);
 
-      // 8. Final Output
+      // 9. Final Output
       if (this.inputMode === 'text') {
         this.decResultText = new TextDecoder().decode(this.decFinalBytes);
         this.decResultBlobUrl = null;

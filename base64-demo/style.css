@@ -143,6 +143,12 @@ details[open] summary:after {
   border-left: 4px solid #ccc;
 }
 
+/* Utility to break long strings */
+.word-break-all {
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
 .match {
   color: green;
   font-weight: bold;
@@ -161,4 +167,11 @@ details[open] summary:after {
   background: #e6fffa;
   border: 1px solid #b2f5ea;
   border-radius: 4px;
+}
+.info-block {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  background: #eef;
+  border-radius: 4px;
+  font-size: 0.9rem;
 }

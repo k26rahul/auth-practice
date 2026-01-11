@@ -22,6 +22,15 @@ const Base64Logic = {
 
   // --- Encoding Helpers ---
 
+  // Get Unicode Code Points from string
+  getStringCodePoints(str) {
+    const codePoints = [];
+    for (const char of str) {
+      codePoints.push('U+' + char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0'));
+    }
+    return codePoints;
+  },
+
   // Converts Uint8Array to a single long binary string
   bytesToBinaryString(uint8Array) {
     let binaryString = '';
