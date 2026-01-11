@@ -91,21 +91,21 @@
           <strong>Padding Calculations:</strong>
 
           <div style="margin-top: 8px; margin-bottom: 4px; font-weight: 600; color: #444">
-            Part 1: Input Binary Sequence
+            Part 1: Bitwise Zero-Padding (Alignment to 6 bits)
           </div>
           • Total Bits in Data: {{ totalBitLength }}<br />
           • Remainder (Bits % 6): {{ bitRemainder }}<br />
-          • Zero-Padding Needed: {{ zeroPaddingNeeded > 0 ? '⚠️' : '💚' }} {{ zeroPaddingNeeded }}
+          • Zero-Padding Needed: {{ zeroPaddingNeeded > 0 ? '⚠️' : '' }} {{ zeroPaddingNeeded }}
           bit(s) added to binary
 
           <hr style="margin: 8px 0; border: 0; border-top: 1px solid #ccc" />
 
           <div style="margin-bottom: 4px; font-weight: 600; color: #444">
-            Part 2: Encoding Output (Padding Characters)
+            Part 2: Output String Padding (Alignment to 4 chars)
           </div>
           • Total Bytes: {{ totalByteLength }}<br />
           • Remainder (Bytes % 3): {{ byteRemainder }}<br />
-          • Padding Chars ('=') Needed: {{ equalsPaddingCount > 0 ? '⚠️' : '💚' }} {{
+          • Padding Chars ('=') Needed: {{ equalsPaddingCount > 0 ? '⚠️' : '' }} {{
           equalsPaddingCount }}
         </div>
 
